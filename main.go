@@ -97,6 +97,18 @@ func deleteTopic(db *sql.DB, id int) error {
 	return err
 }
 
+func updateTopicDescription(db *sql.DB, desc string, id int) error {
+	_, err := db.Exec("UPDATE topics SET description = $1 WHERE id = $2", desc, id)
+
+	return err
+}
+
+func updateTopicTitle(db *sql.DB, titleNew string, id int) error {
+	_, err := db.Exec("UPDATE topics SET title = $1 WHERE id = $2", titleNew, id)
+
+	return err
+}
+
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 
@@ -125,12 +137,47 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		fmt.Fprintf(w, "Successfully created topic with ID: %v", id)
+	} else if r.Method == "PATCH" {
+
+		idStr := strings.TrimPrefix(r.URL.Path, "/")
+		id, err := strconv.Atoi(idStr)
+
+		if err != nil {
+			http.Error(w, "Invalid ID", 400)
+			return
+		}
+
+		var t Topic
+		err = json.NewDecoder(r.Body).Decode(&t)
+		if err != nil {
+			http.Error(w, "Invalid JSON", 400)
+			return
+		}
+
+		if t.Title != "" {
+			err := updateTopicTitle(db, t.Title, id)
+			if err != nil {
+				http.Error(w, "Database error updating title", 500)
+				return
+			}
+		}
+
+		if t.Description != "" {
+			err := updateTopicDescription(db, t.Description, id)
+			if err != nil {
+				http.Error(w, "Database error updating description", 500)
+				return
+			}
+		}
+
+		fmt.Fprintf(w, "Successfully updated Topic %v", id)
+
 	} else if r.Method == "DELETE" {
 		idStr := strings.TrimPrefix(r.URL.Path, "/")
 		id, err := strconv.Atoi(idStr)
 
 		if err != nil {
-			http.Error(w, "Bad Request", 400)
+			http.Error(w, "Invalid ID", 400)
 			return
 		}
 
