@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"encoding/json"
+
 	_ "github.com/lib/pq"
 )
 
@@ -38,15 +39,16 @@ func main() {
 
 	fmt.Println("Connected successfully!")
 
-	//createTopic(db, "General Chat", "A place to talk about anything.")
-	//createTopic(db, "Help", "Ask for help with the CVWO assignment here, haha.")
-	//getTopics(db)
+	//createTopic("General Chat", "A place to talk about anything.")
+	//createTopic("Help", "Ask for help with the CVWO assignment here, haha.")
+	//getTopics()
 
 	http.HandleFunc("/", homeHandler)
 	http.ListenAndServe(":8080", nil)
 }
 
-func createTopic(db *sql.DB, title string, description string) {
+func createTopic(db *sql.DB, t Topic) (int, error) {
+
 	sqlStatement := `
 	INSERT INTO topics (title, description) 
 	VALUES ($1, $2)
@@ -55,13 +57,13 @@ func createTopic(db *sql.DB, title string, description string) {
 
 	var id int
 
-	err := db.QueryRow(sqlStatement, title, description).Scan(&id)
+	err := db.QueryRow(sqlStatement, t.Title, t.Description).Scan(&id)
 
 	if err != nil {
-		log.Fatal("Failed to insert text:", err)
+		return 0, err
 	}
 
-	fmt.Printf("Created Topic with Title: %v, and ID: %v\n", title, id)
+	return id, nil
 }
 
 func getTopics(db *sql.DB) ([]Topic, error) {
@@ -88,13 +90,34 @@ func getTopics(db *sql.DB) ([]Topic, error) {
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	topics, err := getTopics(db)
+	if r.Method == "GET" {
 
-	if err != nil {
-		http.Error(w, "Database error", 500)
-		return
+		topics, err := getTopics(db)
+
+		if err != nil {
+			http.Error(w, "Database error", 500)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(topics)
+
+	} else if r.Method == "POST" {
+
+		var t Topic
+		err := json.NewDecoder(r.Body).Decode(&t)
+		if err != nil {
+			http.Error(w, "Invalid JSON", 400)
+			return
+		}
+
+		id, err := createTopic(db, t)
+		if err != nil {
+			http.Error(w, "Database error", 500)
+			return
+		}
+		fmt.Fprintf(w, "Successfully created topic with ID: %v", id)
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(topics)
 }
