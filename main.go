@@ -2,11 +2,12 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-
-	"encoding/json"
+	"strconv"
+	"strings"
 
 	_ "github.com/lib/pq"
 )
@@ -89,6 +90,13 @@ func getTopics(db *sql.DB) ([]Topic, error) {
 
 }
 
+func deleteTopic(db *sql.DB, id int) error {
+	// Note to self: $1 is used as placeholder to prevent SQL injection (security concerns)
+	_, err := db.Exec("DELETE FROM topics WHERE id = $1", id)
+
+	return err
+}
+
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 
@@ -117,6 +125,22 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		fmt.Fprintf(w, "Successfully created topic with ID: %v", id)
+	} else if r.Method == "DELETE" {
+		idStr := strings.TrimPrefix(r.URL.Path, "/")
+		id, err := strconv.Atoi(idStr)
+
+		if err != nil {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+
+		err = deleteTopic(db, id)
+		if err != nil {
+			http.Error(w, "Database error", 500)
+			return
+		}
+		fmt.Fprintf(w, "Successfully deleted Topic %v", id)
+
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
