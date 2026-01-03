@@ -22,7 +22,7 @@ type Topic struct {
 
 func main() {
 	// 1. Connection settings
-	connStr := "user=postgres password=Heinlinhtet@336 dbname=cvwo_forum sslmode=disable"
+	connStr := "user=postgres password=PASSWORD_DELETED_FOR_SAFETY_REASONS dbname=cvwo_forum sslmode=disable"
 
 	// 2. Open the connection
 	var err error

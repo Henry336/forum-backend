@@ -1,4 +1,4 @@
-module github.com/heinlinhtet/cvwo-forum
+module github.com/heinlinhtet/forum-backend
 
 go 1.25.5
 
