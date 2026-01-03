@@ -22,7 +22,7 @@ type Topic struct {
 
 func main() {
 	// 1. Connection settings
-	connStr := "user=postgres password=PASSWORD_DELETED_FOR_SAFETY_REASONS dbname=cvwo_forum sslmode=disable"
+	connStr := "user=postgres password=PASSWORD_REMOVED_haha dbname=cvwo_forum sslmode=disable"
 
 	// 2. Open the connection
 	var err error
@@ -154,7 +154,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Successfully created topic with ID: %v", id)
 	} else if r.Method == "PATCH" {
 
-		idStr := strings.TrimPrefix(r.URL.Path, "/")
+		idStr := strings.TrimPrefix(r.URL.Path, "/topics/")
 		id, err := strconv.Atoi(idStr)
 
 		if err != nil {
@@ -188,11 +188,11 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Successfully updated Topic %v", id)
 
 	} else if r.Method == "DELETE" {
-		idStr := strings.TrimPrefix(r.URL.Path, "/")
+		idStr := strings.TrimPrefix(r.URL.Path, "/topics/")
 		id, err := strconv.Atoi(idStr)
 
 		if err != nil {
-			http.Error(w, "Invalid ID", 400)
+			http.Error(w, "Invalid ID"+idStr, 400)
 			return
 		}
 
