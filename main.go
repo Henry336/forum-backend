@@ -110,6 +110,21 @@ func updateTopicTitle(db *sql.DB, titleNew string, id int) error {
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
+	// 1. PERMISSION SLIPS (CORS)
+	// Allow any origin or set to "http://localhost:5173" for better security
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Allow the specific methods being used
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
+
+	// Allow JSON headers
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	// Pre-flight check
+	if r.Method == "OPTIONS" {
+		return
+	}
+
 	if r.Method == "GET" {
 
 		topics, err := getTopics(db)
