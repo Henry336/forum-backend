@@ -1,29 +1,25 @@
-CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    username TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+DROP TABLE IF EXISTS comments CASCADE;
+DROP TABLE IF EXISTS posts CASCADE;
+DROP TABLE IF EXISTS topics CASCADE;
 
 CREATE TABLE IF NOT EXISTS topics (
     id SERIAL PRIMARY KEY,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS posts (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    user_id INTEGER REFERENCES users(id),
-    topic_id INTEGER REFERENCES topics(id),
+    description TEXT NOT NULL,
+    username TEXT DEFAULT 'Anonymous',
+    topic_id INTEGER REFERENCES topics(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS comments (
     id SERIAL PRIMARY KEY,
     content TEXT NOT NULL,
-    user_id INTEGER REFERENCES users(id),
+    username TEXT DEFAULT 'Anonymous',
     post_id INTEGER REFERENCES posts(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
